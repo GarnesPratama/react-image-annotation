@@ -4,25 +4,29 @@ import type {
   Action,
   MainLayoutImageAnnotationState,
 } from "../../MainLayout/types";
-import Immutable, { ImmutableObject } from "seamless-immutable";
 import getActiveImage from "./get-active-image";
+import {produce} from 'immer';
 
 export default (
-  state: ImmutableObject<MainLayoutImageAnnotationState>,
+  state: MainLayoutImageAnnotationState,
   action: Action
-): ImmutableObject<MainLayoutImageAnnotationState> => {
-  const { currentImageIndex } = getActiveImage(Immutable(state));
+): MainLayoutImageAnnotationState => {
+  const { currentImageIndex } = getActiveImage(state);
 
   switch (action.type) {
     case "IMAGE_LOADED": {
       if (!currentImageIndex) return state;
-      return Immutable(state).setIn(
-        ["images", currentImageIndex.toString(), "pixelSize"],
-        {
+      return produce(state, (draft) => {
+        // const idx = currentImageIndex.toString();
+        const idx = currentImageIndex;
+    
+        if (!draft.images[idx]) return;
+    
+        draft.images[idx].pixelSize = {
           w: action.metadata.naturalWidth,
           h: action.metadata.naturalHeight,
-        }
-      );
+        };
+      });
     }
   }
   return state;

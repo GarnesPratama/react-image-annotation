@@ -1,8 +1,10 @@
 // @flow
 import { Action, MainLayoutState } from "../../MainLayout/types";
 import { ExpandingLine, moveRegion, Region } from "../../types/region-tools.ts";
-import Immutable, { ImmutableObject } from "seamless-immutable";
+import {produce} from "immer";
 import isEqual from "lodash/isEqual";
+import get from "lodash/get";
+import set from "lodash/set";
 import getActiveImage from "./get-active-image";
 import { saveToHistory } from "./history-handler";
 import colors from "../../colors";
@@ -11,19 +13,23 @@ import convertExpandingLineToPolygon from "./convert-expanding-line-to-polygon";
 import getLandmarksWithTransform from "../../utils/get-landmarks-with-transform";
 import setInLocalStorage from "../../utils/set-in-local-storage";
 import { clamp } from "../../utils/clamp";
+import { cloneDeep } from "lodash";
 
 const getRandomId = () => Math.random().toString().split(".")[1];
 
-export default <T extends ImmutableObject<MainLayoutState>>(
+export default <T extends MainLayoutState>(
   state: T,
   action: Action
 ): T => {
+
+
   if (
     state.allowedArea &&
     state.selectedTool !== "modify-allowed-area" &&
     ["MOUSE_DOWN", "MOUSE_UP", "MOUSE_MOVE"].includes(action.type) &&
     "x" in action
   ) {
+    console.log({initialType: Object.isFrozen(action.type)});
     const aa = state.allowedArea;
     action.x = clamp(action.x, aa.x, aa.x + aa.w);
     action.y = clamp(action.y, aa.y, aa.y + aa.h);
@@ -43,12 +49,11 @@ export default <T extends ImmutableObject<MainLayoutState>>(
 
   // Throttle certain actions
   if (action.type === "MOUSE_MOVE") {
-    if (Date.now() - (state.lastMouseMoveCall || 0) < 16)
-      return Immutable(state) as T;
-    state = Immutable(state).setIn(["lastMouseMoveCall"], Date.now()) as T;
+    if (Date.now() - ((state).lastMouseMoveCall || 0) < 16) return state
+    state = produce(state, s => {s.lastMouseMoveCall = Date.now()})
   }
   if (!action.type.includes("MOUSE")) {
-    state = Immutable(state).setIn(["lastAction"], action) as T;
+    state = produce(state, s => {s.lastAction = action})
   }
 
   const { currentImageIndex, pathToActiveImage, activeImage } =
@@ -77,23 +82,24 @@ export default <T extends ImmutableObject<MainLayoutState>>(
   const modifyRegion = (
     regionId: string | number | Region,
     obj: Partial<Region> | null
-  ): ImmutableObject<MainLayoutState> => {
+  ): T => {
     const [region, regionIndex] = getRegion(regionId) ?? [null, null];
     if (!region || regionIndex === null) return state as T;
     if (obj !== null) {
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions", regionIndex.toString()],
-        {
-          ...region,
-          ...obj,
-        }
-      ) as T;
+      return produce(state, s => {set(s, [...pathToActiveImage, "regions", regionIndex], {
+        ...region,
+        ...obj,
+      })}) as T;
     } else {
       // delete region
-      const regions = activeImage?.regions;
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions"],
-        (regions || []).filter((r) => r.id !== region.id)
+      const regions = activeImage?.regions
+      return produce(
+        state,
+        s => set(
+          s, 
+          [...pathToActiveImage, "regions"],
+          (regions || []).filter((r) => r.id !== region.id)
+        )
       ) as T;
     }
   };
@@ -108,25 +114,29 @@ export default <T extends ImmutableObject<MainLayoutState>>(
   //   );
   // };
 
-  const closeEditors = (state: ImmutableObject<MainLayoutState>) => {
+  const closeEditors = (state: MainLayoutState) => {
     if (currentImageIndex === null) {
       return state;
     }
-    const path: string[] = [...pathToActiveImage, "regions"];
-    const newValue = (activeImage?.regions || []).map((r) => ({
-      ...r,
-      editingLabels: false,
-    }));
-    return Immutable(state).setIn(path, newValue);
+    return produce(
+      state,
+      s => {set(s,
+        [...pathToActiveImage, "regions"],
+        (activeImage?.regions || []).map((r) => ({
+          ...r,
+          editingLabels: false,
+        }))
+      )}
+    );
   };
 
   const setNewImage = (index: number) => {
-    return Immutable(
-      Immutable(state).setIn(
-        ["selectedImage"],
-        index
-      ) as ImmutableObject<MainLayoutState>
-    );
+    return produce(
+      state,
+      s => {
+        s.selectedImage = index
+      }
+    )
   };
   switch (action.type) {
     case "@@INIT": {
@@ -136,46 +146,56 @@ export default <T extends ImmutableObject<MainLayoutState>>(
       return setNewImage(action.imageIndex) as T;
     }
     case "SELECT_CLASSIFICATION": {
-      return Immutable(state).setIn(["selectedCls"], action.cls) as T;
+      return produce(state, s => {s.selectedCls = action.cls}) as T;
     }
     case "CHANGE_REGION": {
-      const regionIndex = getRegionIndex(action.region);
+      const _action = cloneDeep(action);
+      const regionIndex = getRegionIndex(_action.region);
+      console.log({regionIndex});
       if (regionIndex === null) return state;
       const oldRegion = activeImage?.regions?.[regionIndex];
-      if (oldRegion?.cls !== action.region.cls) {
+      console.log({oldRegion});
+      if (oldRegion?.cls !== _action.region.cls) {
         state = saveToHistory(state, "Change Region Classification") as T;
-        const clsIndex = action.region.cls
+        const clsIndex = _action.region.cls
           ? state.regionClsList?.findIndex((cls) =>
               typeof cls === "string"
-                ? cls === action.region.cls
-                : cls.id === action.region.cls
+                ? cls === _action.region.cls
+                : cls.id === _action.region.cls
             )
           : undefined;
+
+        console.log({clsIndex, _action, acttype: Object.isFrozen(_action)});
         if (clsIndex !== undefined && clsIndex !== -1) {
-          state = Immutable(state).setIn(
-            ["selectedCls"],
-            action.region.cls
-          ) as T;
+          state = produce(state, s => {s.selectedCls = _action.region.cls})
+
+          console.log({state});
+
+          const a = _action.region;
+          console.log({atype: Object.isFrozen(a)});
 
           if (clsIndex !== -1 && state.regionClsList) {
             const cls = state.regionClsList[clsIndex];
-            action.region.color =
+            _action.region.color =
               typeof cls !== "string"
                 ? cls.color
                 : colors[clsIndex % colors.length];
           }
         }
       }
-      if (!isEqual(oldRegion?.tags, action.region.tags)) {
+      if (!isEqual(oldRegion?.tags, _action.region.tags)) {
         state = saveToHistory(state, "Change Region Tags") as T;
       }
-      if (!isEqual(oldRegion?.comment, action.region.comment)) {
+      if (!isEqual(oldRegion?.comment, _action.region.comment)) {
         state = saveToHistory(state, "Change Region Comment") as T;
       }
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions", regionIndex.toString()],
-        action.region
-      ) as T;
+      return produce(
+        state,
+        s => {set(s,
+          [...pathToActiveImage, "regions", regionIndex],
+          _action.region
+        )}
+      );
     }
     case "CHANGE_IMAGE": {
       if (!activeImage) return state;
@@ -183,10 +203,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
       for (const key of Object.keys(delta)) {
         if (key === "cls") saveToHistory(state, "Change Image Class");
         if (key === "tags") saveToHistory(state, "Change Image Tags");
-        state = Immutable(state).setIn(
-          [...pathToActiveImage, key],
-          delta[key as "cls" | "tags"]
-        ) as T;
+        state = produce(state, s => {set(s, [...pathToActiveImage, key], delta[key as "cls" | "tags"])})
       }
       return state;
     }
@@ -199,33 +216,27 @@ export default <T extends ImmutableObject<MainLayoutState>>(
         highlighted: r.id === region.id,
         editingLabels: r.id === region.id,
       }));
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions"],
-        regions
-      ) as T;
+      return produce(state, s => {set(s, [...pathToActiveImage, "regions"], regions)})
     }
     case "BEGIN_MOVE_POINT": {
       state = closeEditors(state) as T;
-      return Immutable(state).setIn(["mode"], {
+      return produce(state, s => {s.mode = {
         mode: "MOVE_REGION",
-        regionId: action.point.id,
-      }) as T;
+        regionId: action.point.id as string,
+      }})
     }
     case "BEGIN_BOX_TRANSFORM": {
       const { box, directions } = action;
       state = closeEditors(state) as T;
       if (directions[0] === 0 && directions[1] === 0) {
-        return Immutable(state).setIn(["mode"], {
-          mode: "MOVE_REGION",
-          regionId: box.id,
-        }) as T;
+        return produce(state, s => {s.mode = {mode: "MOVE_REGION", regionId: box.id as string}})
       } else {
-        return Immutable(state).setIn(["mode"], {
+        return produce(state, s => {s.mode = {
           mode: "RESIZE_BOX",
-          regionId: box.id,
+          regionId: box.id as string,
           freedom: directions,
-          original: { x: box.x, y: box.y, w: box.w, h: box.h },
-        }) as T;
+          original: {x: box.x, y: box.y, w: box.w, h: box.h},
+        }})
       }
     }
     case "BEGIN_MOVE_POLYGON_POINT": {
@@ -236,29 +247,32 @@ export default <T extends ImmutableObject<MainLayoutState>>(
         state.mode.mode === "DRAW_POLYGON" &&
         pointIndex === 0
       ) {
-        const region = modifyRegion(polygon, {
-          points: polygon.points.slice(0, -1),
-          open: false,
-        });
-        return Immutable(region).setIn(["mode"], null) as T;
+        return produce(
+          modifyRegion(polygon, {
+            points: polygon.points.slice(0, -1),
+            editingLabels: true,
+            open: false,
+          }),
+          s => {s.mode = null}
+        )
       } else {
         state = saveToHistory(state, "Move Polygon Point") as T;
       }
-      return Immutable(state).setIn(["mode"], {
+      return produce(state, s => {s.mode = {
         mode: "MOVE_POLYGON_POINT",
-        regionId: polygon.id,
+        regionId: polygon.id as string,
         pointIndex,
-      }) as T;
+      }})
     }
     case "BEGIN_MOVE_KEYPOINT": {
       const { region, keypointId } = action;
       state = closeEditors(state) as T;
       state = saveToHistory(state, "Move Keypoint") as T;
-      return Immutable(state).setIn(["mode"], {
+      return produce(state, s => {s.mode = {
         mode: "MOVE_KEYPOINT",
-        regionId: region.id,
+        regionId: region.id as string,
         keypointId,
-      }) as T;
+      }})
     }
     case "ADD_POLYGON_POINT": {
       const { polygon, point, pointIndex } = action;
@@ -266,13 +280,10 @@ export default <T extends ImmutableObject<MainLayoutState>>(
       if (regionIndex === null) return state;
       const points = [...polygon.points];
       points.splice(pointIndex, 0, point);
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions", regionIndex.toString()],
-        {
-          ...polygon,
-          points,
-        }
-      ) as T;
+      return produce(state, s => {set(s, [...pathToActiveImage, "regions", regionIndex], {
+        ...polygon,
+        points,
+      })}) as T;
     }
     case "MOUSE_MOVE": {
       const { x, y } = action;
@@ -283,15 +294,18 @@ export default <T extends ImmutableObject<MainLayoutState>>(
           const { pointIndex, regionId } = state.mode;
           const regionIndex = getRegionIndex(regionId);
           if (regionIndex === null) return state;
-          return Immutable(state).setIn(
-            [
-              ...pathToActiveImage,
-              "regions",
-              regionIndex.toString(),
-              "points",
-              pointIndex.toString(),
-            ],
-            [x, y]
+
+          return produce(
+            state,
+            s => {set(s, [
+                ...pathToActiveImage,
+                "regions",
+                regionIndex,
+                "points",
+                pointIndex,
+              ],
+              [x, y]
+            )}
           ) as T;
         }
         case "MOVE_KEYPOINT": {
@@ -305,33 +319,39 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             !("points" in region)
           )
             return state;
-          return Immutable(state).setIn(
-            [
-              ...pathToActiveImage,
-              "regions",
-              regionIndex.toString(),
-              "points",
-              keypointId,
-            ],
-            { ...region.points[keypointId], x, y }
-          ) as T;
+          
+            return produce(
+              state,
+              s => {set(s, [
+                  ...pathToActiveImage,
+                  "regions",
+                  regionIndex,
+                  "points",
+                  keypointId,
+                ],
+                {...(region).points[keypointId], x, y}
+              )}
+            ) as T;
         }
         case "MOVE_REGION": {
           const { regionId } = state.mode;
           if (regionId === "$$allowed_area") {
             const { allowedArea: { w, h } = { w: 0, h: 0 } } = state;
-            return Immutable(state).setIn(["allowedArea"], {
+            return produce(state, s => {s.allowedArea = {
               x: x - w / 2,
               y: y - h / 2,
               w,
               h,
-            }) as T;
+            }})
           }
           const regionIndex = getRegionIndex(regionId);
           if (regionIndex === null || !activeImage.regions) return state;
-          return Immutable(state).setIn(
-            [...pathToActiveImage, "regions", regionIndex.toString()],
-            moveRegion(activeImage.regions[regionIndex], x, y)
+          return produce(
+            state,
+            s => {set(s,
+              [...pathToActiveImage, "regions", regionIndex],
+              moveRegion(activeImage.regions![regionIndex], x, y)
+            )}
           ) as T;
         }
         case "RESIZE_BOX": {
@@ -360,40 +380,31 @@ export default <T extends ImmutableObject<MainLayoutState>>(
 
           // determine if we should switch the freedom
           if (dw <= 0.001) {
-            state = Immutable(state).setIn(
-              ["mode", "freedom"],
-              [xFree * -1, yFree]
-            ) as T;
+            state = produce(state, s => {if(s.mode?.mode === 'RESIZE_BOX') s.mode.freedom = [xFree * -1, yFree]}) as T;
           }
           if (dh <= 0.001) {
-            state = Immutable(state).setIn(
-              ["mode", "freedom"],
-              [xFree, yFree * -1]
-            ) as T;
+            state = produce(state, s => { if(s.mode?.mode === 'RESIZE_BOX') s.mode!.freedom = [xFree, yFree * -1]}) as T;
           }
 
           if (regionId === "$$allowed_area") {
-            return Immutable(state).setIn(["allowedArea"], {
+            return produce(state, s => {s.allowedArea = {
               x: dx,
               w: dw,
               y: dy,
               h: dh,
-            }) as T;
+            }}) as T;
           }
 
           const regionIndex = getRegionIndex(regionId);
           if (regionIndex === null || !activeImage.regions) return state;
           const box = activeImage.regions[regionIndex];
-          return Immutable(state).setIn(
-            [...pathToActiveImage, "regions", regionIndex.toString()],
-            {
-              ...box,
-              x: dx,
-              w: dw,
-              y: dy,
-              h: dh,
-            }
-          ) as T;
+          return produce(state, s => {set(s, [...pathToActiveImage, "regions", regionIndex], {
+            ...box,
+            x: dx,
+            w: dw,
+            y: dy,
+            h: dh,
+          })}) as T;
         }
         case "RESIZE_KEYPOINTS": {
           const { regionId, landmarks, centerX, centerY } = state.mode;
@@ -403,7 +414,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
           const scale = distFromCenter / 0.15;
           return modifyRegion(regionId, {
             points: getLandmarksWithTransform({
-              landmarks: landmarks.asMutable({ deep: true }),
+              landmarks: landmarks,
               center: { x: centerX, y: centerY },
               scale,
             }),
@@ -412,7 +423,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
         case "DRAW_POLYGON": {
           const { regionId } = state.mode;
           const [region, regionIndex] = getRegion(regionId) || [null, null];
-          if (!region) return Immutable(state).setIn(["mode"], null) as T;
+          if (!region) return produce(state, s => {s.mode = null}) as T;
           if (
             typeof region !== "object" ||
             region.type !== "polygon" ||
@@ -421,30 +432,29 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             return state;
           const { points } = region;
           if (!Array.isArray(points)) return state;
-          return Immutable(state).setIn(
-            [
-              ...pathToActiveImage,
-              "regions",
-              regionIndex.toString(),
-              "points",
-              (points.length - 1).toString(),
-            ],
-            [x, y]
+          return produce(
+            state,
+            s => {set(s, [
+                ...pathToActiveImage,
+                "regions",
+                regionIndex,
+                "points",
+                points.length - 1,
+              ],
+              [x, y]
+            )}
           ) as T;
         }
         case "DRAW_LINE": {
           const { regionId } = state.mode;
           const [region, regionIndex] = getRegion(regionId) || [null, null];
           if (!region || typeof region !== "object" || regionIndex === null)
-            return Immutable(state).setIn(["mode"], null) as T;
-          return Immutable(state).setIn(
-            [...pathToActiveImage, "regions", regionIndex.toString()],
-            {
-              ...region,
-              x2: x,
-              y2: y,
-            }
-          ) as T;
+            return produce(state, s => {s.mode = null}) as T;
+          return produce(state, s => {set(s, [...pathToActiveImage, "regions", regionIndex], {
+            ...region,
+            x2: x,
+            y2: y,
+          })}) as T;
         }
         case "DRAW_EXPANDING_LINE": {
           const { regionId } = state.mode;
@@ -469,30 +479,33 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             if (mouseDistFromLastPoint < 0.002 && !lastPoint.width)
               return state;
 
-            return Immutable(state).setIn(
-              [
-                ...pathToActiveImage,
-                "regions",
-                regionIndex.toString(),
-                "points",
-              ],
-              expandingLine.points.slice(0, -1).concat([
-                {
-                  ...lastPoint,
-                  width: mouseDistFromLastPoint * 2,
-                  angle: Math.atan2(lastPoint.x - x, lastPoint.y - y),
-                },
-              ])
-            ) as T;
+            const newState = produce(
+              state,
+              s => {set(s, 
+                [...pathToActiveImage, "regions", regionIndex, "points"],
+                expandingLine.points.slice(0, -1).concat([
+                  {
+                    ...lastPoint,
+                    width: mouseDistFromLastPoint * 2,
+                    angle: Math.atan2(lastPoint.x - x, lastPoint.y - y),
+                  },
+                ])
+              )}
+            );
+
+            return newState as T;
           }
           // If mouse is up, move the next candidate point
-          return Immutable(state).setIn(
-            [...pathToActiveImage, "regions", regionIndex.toString()],
-            {
-              ...expandingLine,
-              candidatePoint: { x, y },
-            }
-          ) as T;
+          return produce(
+              state,
+              s => {set(s,
+                [...pathToActiveImage, "regions", regionIndex],
+                {
+                  ...expandingLine,
+                  candidatePoint: {x, y},
+                }
+              )}
+            ) as T;
         }
         case "SET_EXPANDING_LINE_WIDTH": {
           const { regionId } = state.mode;
@@ -508,14 +521,12 @@ export default <T extends ImmutableObject<MainLayoutState>>(
           )
             return state;
           const lastPoint = expandingLine.points.slice(-1)[0];
-          return Immutable(state).setIn(
-            [
-              ...pathToActiveImage,
-              "regions",
-              regionIndex.toString(),
-              "expandingWidth",
-            ],
-            Math.sqrt((lastPoint.x - x) ** 2 + (lastPoint.y - y) ** 2)
+          return produce(
+            state,
+            s => {set(s, 
+              [...pathToActiveImage, "regions", regionIndex, "expandingWidth"],
+              Math.sqrt((lastPoint.x - x) ** 2 + (lastPoint.y - y) ** 2)
+            )}
           ) as T;
         }
         default:
@@ -526,7 +537,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
       if (!activeImage) return state;
       const { x, y } = action;
 
-      state = Immutable(state).setIn(["mouseDownAt"], { x, y }) as T;
+      state = produce(state, s => {s.mouseDownAt = {x, y}}) as T;
 
       if (state.mode) {
         switch (state.mode.mode) {
@@ -542,10 +553,13 @@ export default <T extends ImmutableObject<MainLayoutState>>(
               polygon.type !== "polygon"
             )
               break;
-            return Immutable(state).setIn(
-              [...pathToActiveImage, "regions", regionIndex.toString()],
-              { ...polygon, points: polygon.points.concat([[x, y]]) }
-            ) as T;
+              return produce(
+                state,
+                s => {set(s, 
+                  [...pathToActiveImage, "regions", regionIndex],
+                  {...polygon, points: polygon.points.concat([[x, y]])}
+                )}
+              ) as T;
           }
           case "DRAW_LINE": {
             const [line, regionIndex] = getRegion(state.mode.regionId) || [
@@ -554,15 +568,8 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             ];
             if (!line || typeof line !== "object" || regionIndex === null)
               break;
-            Immutable(state).setIn(
-              [...pathToActiveImage, "regions", regionIndex.toString()],
-              {
-                ...line,
-                x2: x,
-                y2: y,
-              }
-            );
-            return Immutable(state).setIn(["mode"], null) as T;
+            const newState = produce(state, s => {set(s, [...pathToActiveImage, "regions", regionIndex], {...line, x2: x, y2: y})});
+            return produce(newState, s => {s.mode = null}) as T;
           }
           case "DRAW_EXPANDING_LINE": {
             const [expandingLine, regionIndex] = getRegion(
@@ -581,28 +588,30 @@ export default <T extends ImmutableObject<MainLayoutState>>(
               Math.sqrt((lastPoint.x - x) ** 2 + (lastPoint.y - y) ** 2) < 0.002
             ) {
               if (!lastPoint.width) {
-                return Immutable(state).setIn(["mode"], {
-                  mode: "SET_EXPANDING_LINE_WIDTH",
-                  regionId: state.mode.regionId,
-                }) as T;
+                  return produce(state, s => {
+                    s.mode = {
+                    mode: "SET_EXPANDING_LINE_WIDTH",
+                    regionId: state.mode?.mode !== 'CREATE_POINT_LINE' ?  state.mode!.regionId : ''
+                  }}) as T;
+               
               } else {
-                const newState = Immutable(state).setIn(
-                  [...pathToActiveImage, "regions", regionIndex.toString()],
-                  convertExpandingLineToPolygon(expandingLine)
-                ) as T;
-                return newState.setIn(["mode"], null) as T;
+                return produce(state, s => {
+                  set(s, 
+                    [...pathToActiveImage, "regions", regionIndex],
+                    convertExpandingLineToPolygon(expandingLine)
+                  )
+                  s.mode = null
+                }) as T;
               }
             }
 
             // Create new point
-            return Immutable(state).setIn(
-              [
-                ...pathToActiveImage,
-                "regions",
-                regionIndex.toString(),
-                "points",
-              ],
-              expandingLine.points.concat([{ x, y, angle: null, width: null }])
+            return produce(
+              state,
+              s => {set(s, 
+                [...pathToActiveImage, "regions", regionIndex, "points"],
+                expandingLine.points.concat([{x, y, angle: null, width: null}])
+              )}
             ) as T;
           }
           case "SET_EXPANDING_LINE_WIDTH": {
@@ -617,17 +626,19 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             )
               break;
             const { expandingWidth } = expandingLine;
-            const newState = Immutable(state).setIn(
-              [...pathToActiveImage, "regions", regionIndex.toString()],
-              convertExpandingLineToPolygon({
-                ...expandingLine,
-                points: expandingLine.points.map((p) =>
-                  p.width ? p : { ...p, width: expandingWidth || null }
-                ),
-                expandingWidth: undefined,
-              })
-            ) as T;
-            return newState.setIn(["mode"], null) as T;
+            return produce(state, s => {
+              set(s,
+                [...pathToActiveImage, "regions", regionIndex],
+                convertExpandingLineToPolygon({
+                  ...expandingLine,
+                  points: expandingLine.points.map((p) =>
+                    p.width ? p : {...p, width: expandingWidth || null}
+                  ),
+                  expandingWidth: undefined,
+                })
+              )
+              s.mode = null
+            }) as T;
           }
           default:
             break;
@@ -658,6 +669,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
         case "create-point": {
           state = saveToHistory(state, "Create Point") as T;
           newRegion = {
+            // @ts-ignore
             type: "point",
             x,
             y,
@@ -683,14 +695,14 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             cls: defaultRegionCls,
             id: getRandomId(),
           };
-          state = Immutable(state).setIn(["mode"], {
+          state = produce(state, s => {s.mode = {
             mode: "RESIZE_BOX",
             editLabelEditorAfter: true,
-            regionId: newRegion.id,
+            regionId: newRegion!.id as string,
             freedom: [1, 1],
-            original: { x, y, w: newRegion.w, h: newRegion.h },
+            original: {x, y, w: newRegion!.w, h: newRegion!.h},
             isNew: true,
-          }) as T;
+          }}) as T;
           break;
         }
         case "create-polygon": {
@@ -708,10 +720,10 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             cls: defaultRegionCls,
             id: getRandomId(),
           };
-          state = Immutable(state).setIn(["mode"], {
+          state = produce(state, s => {s.mode = {
             mode: "DRAW_POLYGON",
-            regionId: newRegion.id,
-          }) as T;
+            regionId: newRegion!.id,
+          }}) as T;
           break;
         }
         case "create-expanding-line": {
@@ -726,10 +738,10 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             cls: defaultRegionCls,
             id: getRandomId(),
           };
-          state = Immutable(state).setIn(["mode"], {
+          state = produce(state, s => {s.mode = {
             mode: "DRAW_EXPANDING_LINE",
-            regionId: newRegion.id,
-          }) as T;
+            regionId: newRegion!.id,
+          }}) as T;
           break;
         }
         case "create-line": {
@@ -747,10 +759,10 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             cls: defaultRegionCls,
             id: getRandomId(),
           };
-          state = Immutable(state).setIn(["mode"], {
+          state = produce(state, s => {s.mode = {
             mode: "DRAW_LINE",
-            regionId: newRegion.id,
-          }) as T;
+            regionId: newRegion!.id,
+          }}) as T;
           break;
         }
         case "create-keypoints": {
@@ -766,7 +778,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             type: "keypoints",
             keypointsDefinitionId,
             points: getLandmarksWithTransform({
-              landmarks: landmarks.asMutable({ deep: true }),
+              landmarks: landmarks,
               center: { x, y },
               scale: 1,
             }),
@@ -774,41 +786,37 @@ export default <T extends ImmutableObject<MainLayoutState>>(
             editingLabels: false,
             id: getRandomId(),
           };
-          state = Immutable(state).setIn(["mode"], {
+          state = produce(state, s => {s.mode = {
             mode: "RESIZE_KEYPOINTS",
             landmarks,
             centerX: x,
             centerY: y,
-            regionId: newRegion.id,
+            regionId: newRegion!.id,
             isNew: true,
-          }) as T;
+          }}) as T;
           break;
         }
         default:
           break;
       }
 
-      const regions = [
-        ...(Immutable(state).getIn(pathToActiveImage).regions || []),
-      ]
+      const regions = [...(get(state, pathToActiveImage).regions || [])]
         .map((r) =>
-          Immutable(r)
-            .setIn(["editingLabels"], false)
-            .setIn(["highlighted"], false)
+          produce(r, (d: any) => {
+            d.editingLabels = false
+            d.highlighted = false
+          })
         )
         .concat(newRegion ? [newRegion] : []);
 
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions"],
-        regions
-      ) as T;
+      return produce(state, s => {set(s, [...pathToActiveImage, "regions"], regions)}) as T;
     }
     case "MOUSE_UP": {
       const { x, y } = action;
 
       const { mouseDownAt = { x, y } } = state;
       if (!state.mode) return state;
-      state = Immutable(state).setIn(["mouseDownAt"], null) as T;
+      state = produce(state, s => {s!.mouseDownAt = undefined}) as T;
 
       switch (state.mode?.mode) {
         case "RESIZE_BOX": {
@@ -817,9 +825,9 @@ export default <T extends ImmutableObject<MainLayoutState>>(
               Math.abs(state.mode.original.x - x) < 0.002 ||
               Math.abs(state.mode.original.y - y) < 0.002
             ) {
-              return Immutable(modifyRegion(state.mode.regionId, null)).setIn(
-                ["mode"],
-                null
+              return produce(
+                modifyRegion(state.mode.regionId, null),
+                s => {s.mode = null}
               ) as T;
             }
           }
@@ -872,16 +880,19 @@ export default <T extends ImmutableObject<MainLayoutState>>(
                   "width" in lastPoint ? (lastPoint.width as number) : 0.002,
               };
             }
-            newExpandingLine = Immutable(expandingLine).setIn(
-              ["points"],
-              fixTwisted(newPoints)
+            newExpandingLine = produce(
+              expandingLine,
+              s => {s.points = fixTwisted(newPoints)}
             ) as unknown as ExpandingLine;
           } else {
             return state;
           }
-          return Immutable(state).setIn(
-            [...pathToActiveImage, "regions", regionIndex.toString()],
-            newExpandingLine
+          return produce(
+            state,
+            s => {set(s, 
+              [...pathToActiveImage, "regions", regionIndex],
+              newExpandingLine
+            )}
           ) as T;
         }
         default:
@@ -891,53 +902,47 @@ export default <T extends ImmutableObject<MainLayoutState>>(
     case "OPEN_REGION_EDITOR": {
       const regionIndex = getRegionIndex(action.region);
       if (regionIndex === null || !activeImage?.regions) return state;
-      const mapped = activeImage.regions.map((r) => ({
-        ...r,
-        highlighted: false,
-        editingLabels: false,
-      }));
       // @ts-ignore
-      const newRegions = Immutable(mapped).setIn(
+      const newRegions = produce(
         activeImage.regions.map((r) => ({
           ...r,
           highlighted: false,
           editingLabels: false,
         })),
-        [regionIndex],
-        {
+        s => {s[regionIndex] = {
           ...(activeImage.regions || [])[regionIndex],
           highlighted: true,
           editingLabels: true,
-        }
+        }}
       );
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions"],
-        newRegions
-      ) as T;
+      return produce(state, s => {set(s, [...pathToActiveImage, "regions"], newRegions)}) as T;
     }
     case "CLOSE_REGION_EDITOR": {
       const regionIndex = getRegionIndex(action.region);
       if (regionIndex === null) return state;
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions", regionIndex.toString()],
-        {
-          ...(activeImage?.regions || [])[regionIndex],
-          editingLabels: false,
-        }
-      ) as T;
+      return produce(state, s => {set(s, [...pathToActiveImage, "regions", regionIndex], {
+        ...(activeImage?.regions || [])[regionIndex],
+        editingLabels: false,
+      })}) as T;
     }
     case "DELETE_REGION": {
       const regionIndex = getRegionIndex(action.region);
       if (regionIndex === null) return state;
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions"],
-        (activeImage?.regions || []).filter((r) => r.id !== action.region.id)
+      return produce(
+        state,
+        s => {set(s, 
+          [...pathToActiveImage, "regions"],
+          (activeImage?.regions || []).filter((r) => r.id !== action.region.id)
+        )}
       ) as T;
     }
     case "DELETE_SELECTED_REGION": {
-      return Immutable(state).setIn(
-        [...pathToActiveImage, "regions"],
-        (activeImage?.regions || []).filter((r) => !r.highlighted)
+      return produce(
+        state,
+        s => {set(s, 
+          [...pathToActiveImage, "regions"],
+          (activeImage?.regions || []).filter((r) => !r.highlighted)
+        )}
       ) as T;
     }
     case "HEADER_BUTTON_CLICKED": {
@@ -967,26 +972,27 @@ export default <T extends ImmutableObject<MainLayoutState>>(
           if (!("images" in state)) return state;
           if (currentImageIndex === state.images.length - 1) return state;
           const newState = setNewImage(+currentImageIndex + 1) as T;
-          return Immutable(newState).setIn(
-            ["images", (currentImageIndex + 1).toString(), "regions"],
-            activeImage?.regions || []
+
+          return produce(
+            newState,
+            s => {set(s, 
+              ["images", currentImageIndex + 1, "regions"],
+              activeImage?.regions || []
+            )}
           ) as T;
         }
         case "settings": {
-          return Immutable(state).setIn(
-            ["settingsOpen"],
-            !state.settingsOpen
-          ) as T;
+          return produce(state, s => {s.settingsOpen = !state.settingsOpen}) as T;
         }
         case "help": {
           return state;
         }
         case "fullscreen": {
-          return Immutable(state).setIn(["fullScreen"], true) as T;
+          return produce(state, s => {s.fullScreen = true}) as T;
         }
         case "exit fullscreen":
         case "window": {
-          return Immutable(state).setIn(["fullScreen"], false) as T;
+          return produce(state, s => {s.fullScreen = false}) as T;
         }
         case "hotkeys": {
           return state;
@@ -1002,20 +1008,15 @@ export default <T extends ImmutableObject<MainLayoutState>>(
     case "SELECT_TOOL": {
       if (action.selectedTool === "show-tags") {
         setInLocalStorage("showTags", !state.showTags);
-        return Immutable(state).setIn(["showTags"], !state.showTags) as T;
+        return produce(state, s => {s.showTags = !state.showTags}) as T;
       } else if (action.selectedTool === "show-mask") {
-        return Immutable(state).setIn(["showMask"], !state.showMask) as T;
+        return produce(state, s => {s.showMask = !state.showMask}) as T;
       }
       if (action.selectedTool === "modify-allowed-area" && !state.allowedArea) {
-        state = Immutable(state).setIn(["allowedArea"], {
-          x: 0,
-          y: 0,
-          w: 1,
-          h: 1,
-        }) as T;
+        state = produce(state, s => {s.allowedArea = {x: 0, y: 0, w: 1, h: 1}}) as T;
       }
-      state = Immutable(state).setIn(["mode"], null) as T;
-      return Immutable(state).setIn(["selectedTool"], action.selectedTool) as T;
+      state = produce(state, s => {s.mode = null}) as T;
+      return produce(state, s => {s.selectedTool = action.selectedTool})as T;
     }
     case "CANCEL": {
       const { mode } = state;
@@ -1030,7 +1031,7 @@ export default <T extends ImmutableObject<MainLayoutState>>(
           case "MOVE_POLYGON_POINT":
           case "RESIZE_BOX":
           case "MOVE_REGION": {
-            return Immutable(state).setIn(["mode"], null) as T;
+            return produce(state, s => {s.mode = null}) as T;
           }
           default:
             return state;
@@ -1039,20 +1040,27 @@ export default <T extends ImmutableObject<MainLayoutState>>(
       // Close any open boxes
       const regions = activeImage?.regions;
       if (regions && regions.some((r) => r.editingLabels)) {
-        return Immutable(state).setIn(
-          [...pathToActiveImage, "regions"],
-          regions.map((r) => ({
-            ...r,
-            editingLabels: false,
-          }))
-        ) as T;
+        return produce(
+          state,
+          s => {set(s, 
+            [...pathToActiveImage, "regions"],
+            regions.map((r) => (
+              {
+              ...r,
+              editingLabels: false,
+            }))
+          )}
+        )as T;
       } else if (regions) {
-        return Immutable(state).setIn(
-          [...pathToActiveImage, "regions"],
-          regions.map((r) => ({
-            ...r,
-            highlighted: false,
-          }))
+        return produce(
+          state,
+          s => {set(s, 
+            [...pathToActiveImage, "regions"],
+            regions.map((r) => ({
+              ...r,
+              highlighted: false,
+            }))
+          )}
         ) as T;
       }
       break;

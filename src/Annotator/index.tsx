@@ -6,7 +6,6 @@ import {
   RegionAllowedActions,
 } from "../MainLayout/types";
 import { ComponentType, FunctionComponent, useEffect, useReducer } from "react";
-import Immutable, { ImmutableObject } from "seamless-immutable";
 
 import type { KeypointsDefinition } from "../types/region-tools.ts";
 import MainLayout from "../MainLayout";
@@ -18,6 +17,7 @@ import historyHandler from "./reducers/history-handler";
 import imageReducer from "./reducers/image-reducer";
 import useEventCallback from "use-event-callback";
 import { AutosegOptions } from "autoseg/webworker";
+import { produce } from "immer";
 
 export type AnnotatorProps = {
   taskDescription?: string;
@@ -114,11 +114,11 @@ export const Annotator = ({
     if (selectedImage === -1) selectedImage = undefined;
   }
   const combinedReducers = combineReducers(imageReducer, generalReducer) as (
-    state: ImmutableObject<MainLayoutState>,
+    state: MainLayoutState,
     action: Action
-  ) => ImmutableObject<MainLayoutState>;
+  ) => MainLayoutState;
 
-  const immutableState = Immutable({
+  const immutableState = {
     showTags,
     selectedCls,
     allowedArea,
@@ -148,7 +148,7 @@ export const Annotator = ({
       selectedImage,
       images,
     },
-  });
+  };
   const [state, dispatchToReducer] = useReducer<
     (state: MainLayoutState, action: Action) => MainLayoutState
   >(
@@ -161,15 +161,12 @@ export const Annotator = ({
 
   const dispatch = useEventCallback((action: Action) => {
     if (action.type === "HEADER_BUTTON_CLICKED") {
-      const value = (Immutable(state) as ImmutableObject<MainLayoutState>)
-        .without("history")
-        .asMutable({ deep: true });
       if (["Exit", "Done", "Save", "Complete"].includes(action.buttonName)) {
-        return onExit(value);
+        return onExit(produce(state, s => {s.history.splice(0)}));
       } else if (action.buttonName === "Next" && onNextImage) {
-        return onNextImage(value);
+        return onNextImage(produce(state, s => {s.history.splice(0)}));
       } else if (action.buttonName === "Prev" && onPrevImage) {
-        return onPrevImage(value);
+        return onPrevImage(produce(state, s => {s.history.splice(0)}));
       }
     }
     dispatchToReducer(action);

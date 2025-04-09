@@ -1,8 +1,9 @@
 // @flow
 
-import { Action, MainLayoutState } from "../../MainLayout/types";
-import Immutable, { ImmutableObject } from "seamless-immutable";
+import { Action, MainLayoutImageAnnotationState, MainLayoutState } from "../../MainLayout/types";
 import moment from "moment";
+import { produce } from "immer";
+import { omit } from "lodash";
 
 const typesToSaveWithHistory: Record<string, string> = {
   BEGIN_BOX_TRANSFORM: "Transform/Move Box",
@@ -10,37 +11,36 @@ const typesToSaveWithHistory: Record<string, string> = {
   DELETE_REGION: "Delete Region",
 };
 
-export const saveToHistory = <T extends ImmutableObject<MainLayoutState>>(
+export const saveToHistory = <T extends MainLayoutState>(
   state: T,
   name: string
-) =>
-  Immutable(state).updateIn(["history"], (h) => {
-    const newValue = {
-      time: moment().toDate(),
-      state: Immutable(state).without("history"),
-      name,
-    };
-    const prevItems = h || [];
+): T => produce(state, (draft) => {
+  const newValue = {
+    time: moment().toDate(),
+    state: { ...state, history: undefined },
+    name,
+  };
 
-    return [newValue, ...prevItems].slice(0, 9);
-  });
+  const prevItems = draft.history || [];
+  draft.history = [newValue, ...prevItems].slice(0, 9);
+});
 
 export default (
   reducer: (
-    state: ImmutableObject<MainLayoutState>,
+    state: MainLayoutState,
     action: Action
-  ) => ImmutableObject<MainLayoutState>
+  ) => MainLayoutState
 ) => {
-  return (state: ImmutableObject<MainLayoutState>, action: Action) => {
+  return (state: MainLayoutState, action: Action) => {
     const prevState = state;
     const nextState = reducer(state, action);
 
     if (action.type === "RESTORE_HISTORY") {
       if (state.history.length > 0) {
-        const newState = Immutable(
-          nextState.history[0].state
-        ) as ImmutableObject<MainLayoutState>;
-        return newState.setIn(["history"], nextState.history.slice(1));
+        const newState = produce(nextState.history[0].state, (draft) => {
+          draft.history = nextState.history.slice(1);
+        });
+        return newState;
       }
     } else {
       if (
@@ -49,17 +49,16 @@ export default (
       ) {
         const historyItem = {
           time: moment().toDate(),
-          state: (
-            Immutable(prevState) as ImmutableObject<MainLayoutState>
-          ).without("history"),
+          state: omit(prevState, "history") as MainLayoutImageAnnotationState,
           name: typesToSaveWithHistory[action.type] || action.type,
         };
-        const prevItems = nextState.history || [];
-        const newValue = [historyItem, ...prevItems].slice(0, 9);
-        const immutableNextState = Immutable(
-          nextState
-        ) as ImmutableObject<MainLayoutState>;
-        return immutableNextState.setIn(["history"], newValue);
+      
+        const nextStateWithHistory = produce(nextState, (draft) => {
+          const prevItems = draft.history || [];
+          draft.history = [historyItem, ...prevItems].slice(0, 9);
+        });
+      
+        return nextStateWithHistory;
       }
     }
 

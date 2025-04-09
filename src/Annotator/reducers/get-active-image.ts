@@ -1,7 +1,7 @@
-import Immutable, { ImmutableObject } from "seamless-immutable";
 import { Image, MainLayoutState } from "../../MainLayout/types";
+import get from 'lodash/get';
 
-export default (state: ImmutableObject<MainLayoutState>) => {
+export default (state: MainLayoutState) => {
   let currentImageIndex: number | null = null;
   let pathToActiveImage: string[] = [];
   let activeImage: Image | null = null;
@@ -11,7 +11,8 @@ export default (state: ImmutableObject<MainLayoutState>) => {
     activeImage = null;
   } else {
     pathToActiveImage = ["images", currentImageIndex.toString()];
-    activeImage = Immutable(state).getIn(pathToActiveImage);
+    activeImage = get(state, pathToActiveImage);
+
   }
   return { currentImageIndex, pathToActiveImage, activeImage };
 };
