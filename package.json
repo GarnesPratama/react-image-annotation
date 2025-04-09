@@ -1,6 +1,6 @@
 {
   "name": "@aman-labs/react-image-annotate",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "dist/react-image-annotate.js",
   "types": "dist/lib.d.ts",
