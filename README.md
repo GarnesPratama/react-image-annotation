@@ -9,7 +9,9 @@ the [code sandbox here](https://codesandbox.io/s/react-image-annotate-example-38
 Implemented features in fork:
 
 - added typescript
-- updated react to v.18
+- changed seamless immutability to immer
+- updated npm and dependencies used by project
+- updated react to v.19
 
 ## Features
 
