@@ -1,4 +1,4 @@
-// @flow
+
 import type { KeypointDefinition } from "../types/region-tools.ts";
 
 type Parameters = {

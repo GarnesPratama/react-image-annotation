@@ -1,4 +1,4 @@
-// @flow
+
 
 import { memo } from "react";
 import colorAlpha from "color-alpha";

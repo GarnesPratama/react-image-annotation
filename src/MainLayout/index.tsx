@@ -1,6 +1,6 @@
-// @flow
 
-import { Action, AnnotatorToolEnum, MainLayoutState } from "./types";
+
+import { Action, AnnotatorToolEnum, MainLayoutState } from "./types.ts";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import {
   ComponentType,
@@ -14,28 +14,28 @@ import {
 } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 
-import ClassSelectionMenu from "../ClassSelectionMenu";
-import DebugBox from "../DebugSidebarBox";
-import HistorySidebarBox from "../HistorySidebarBox";
-import ImageCanvas from "../ImageCanvas";
-import RegionSelector from "../RegionSelectorSidebarBox";
-import TagsSidebarBox from "../TagsSidebarBox";
-import TaskDescription from "../TaskDescriptionSidebarBox";
+import ClassSelectionMenu from "../ClassSelectionMenu/index.tsx";
+import DebugBox from "../DebugSidebarBox/index.tsx";
+import HistorySidebarBox from "../HistorySidebarBox/index.tsx";
+import ImageCanvas from "../ImageCanvas/index.tsx";
+import RegionSelector from "../RegionSelectorSidebarBox/index.tsx";
+import TagsSidebarBox from "../TagsSidebarBox/index.tsx";
+import TaskDescription from "../TaskDescriptionSidebarBox/index.tsx";
 import classnames from "classnames";
-import getActiveImage from "../Annotator/reducers/get-active-image";
-import iconDictionary from "./icon-dictionary";
-import { useDispatchHotkeyHandlers } from "../ShortcutsManager";
+import getActiveImage from "../Annotator/reducers/get-active-image.ts";
+import iconDictionary from "./icon-dictionary.tsx";
+import { useDispatchHotkeyHandlers } from "../ShortcutsManager/index.tsx";
 import useEventCallback from "use-event-callback";
-import { useKey } from "../utils/use-key-hook";
-import { useSettings } from "../SettingsProvider";
+import { useKey } from "../utils/use-key-hook.ts";
+import { useSettings } from "../SettingsProvider/index.tsx";
 import { HotKeys } from "react-hotkeys";
 import { grey } from "@mui/material/colors";
 import { notEmpty } from "../utils/not-empty.ts";
 import { ALL_TOOLS } from "./all-tools-list.ts";
-import Workspace from "../workspace/Workspace";
+import Workspace from "../workspace/Workspace/index.tsx";
 import { tss } from "tss-react/mui";
-import { RegionLabelProps } from "../RegionLabel";
-import SettingsDialog from "../SettingsDialog";
+import { RegionLabelProps } from "../RegionLabel/index.tsx";
+import SettingsDialog from "../SettingsDialog/index.tsx";
 
 // import Fullscreen from "../Fullscreen"
 
@@ -354,6 +354,7 @@ export const MainLayout = ({
         >
           <HotKeys
             tabIndex={-1}
+						// @ts-ignore
             innerRef={innerContainerRef}
             onMouseDown={refocusOnMouseEvent}
             onMouseOver={refocusOnMouseEvent}

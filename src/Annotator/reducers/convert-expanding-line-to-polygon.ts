@@ -1,6 +1,6 @@
-// @flow
 
-import { clamp } from "../../utils/clamp";
+
+import { clamp } from "../../utils/clamp.ts";
 import { ExpandingLine } from "../../types/region-tools.ts";
 
 export default (expandingLine: ExpandingLine) => {

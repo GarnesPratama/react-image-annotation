@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { IMatrix, Matrix } from "transformation-matrix-js";
-import Crosshairs from "../Crosshairs";
+import Crosshairs from "../Crosshairs/index.tsx";
 import type {
   Box,
   Keypoints,
@@ -18,21 +18,21 @@ import type {
   Region,
 } from "../types/region-tools.ts";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import PreventScrollToParents from "../PreventScrollToParents";
+import PreventScrollToParents from "../PreventScrollToParents/index.tsx";
 import useWindowSize from "../hooks/use-window-size.tsx";
-import useMouse from "./use-mouse";
-import useProjectRegionBox from "./use-project-box";
-import useExcludePattern from "../hooks/use-exclude-pattern";
+import useMouse from "./use-mouse.ts";
+import useProjectRegionBox from "./use-project-box.ts";
+import useExcludePattern from "../hooks/use-exclude-pattern.tsx";
 import { useRafState } from "react-use";
-import PointDistances from "../PointDistances";
-import RegionTags from "../RegionTags";
-import RegionLabel, { RegionLabelProps } from "../RegionLabel";
-import ImageMask from "../ImageMask";
-import RegionSelectAndTransformBoxes from "../RegionSelectAndTransformBoxes";
+import PointDistances from "../PointDistances/index.tsx";
+import RegionTags from "../RegionTags/index.tsx";
+import RegionLabel, { RegionLabelProps } from "../RegionLabel/index.tsx";
+import ImageMask from "../ImageMask/index.tsx";
+import RegionSelectAndTransformBoxes from "../RegionSelectAndTransformBoxes/index.tsx";
 import ImageCanvasBackground from "../ImageCanvasBackground/index.tsx";
 import useEventCallback from "use-event-callback";
-import RegionShapes from "../RegionShapes";
-import useWasdMode from "./use-wasd-mode";
+import RegionShapes from "../RegionShapes/index.tsx";
+import useWasdMode from "./use-wasd-mode.ts";
 import { ImagePosition } from "../types/common.ts";
 import { AutosegOptions } from "autoseg/webworker";
 import { tss } from "tss-react/mui";

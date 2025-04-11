@@ -11,7 +11,11 @@ export default defineConfig(() => {
     base: "./",
     plugins: [
       react(),
-      dts(),
+      dts({
+        entryRoot: "src",
+        outDir: "dist",
+        include: ["src"],
+      }),
       viteTsconfigPaths(),
       nodePolyfills(),
       peerDepsExternal(),
@@ -34,7 +38,10 @@ export default defineConfig(() => {
     },
     build: {
       lib: {
-        entry: resolve(__dirname, "src/lib.tsx"),
+        entry: {
+          lib: resolve(__dirname, "src/lib.tsx"),
+          workspace: resolve(__dirname, "src/workspace/index.tsx")
+        },
         formats: ["es"],
       },
       rollupOptions: {

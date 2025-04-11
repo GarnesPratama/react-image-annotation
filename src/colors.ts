@@ -1,4 +1,4 @@
-// @flow
+
 
 import * as muiColors from "@mui/material/colors";
 

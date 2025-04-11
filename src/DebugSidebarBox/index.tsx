@@ -1,6 +1,6 @@
-// @flow
 
-import SidebarBoxContainer from "../SidebarBoxContainer";
+
+import SidebarBoxContainer from "../SidebarBoxContainer/index.tsx";
 import { Action, MainLayoutState } from "../MainLayout/types.ts";
 
 interface DebugSidebarBoxProps {

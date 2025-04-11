@@ -4,17 +4,17 @@ import {
   Image,
   MainLayoutState,
   RegionAllowedActions,
-} from "../MainLayout/types";
+} from "../MainLayout/types.ts";
 import { ComponentType, FunctionComponent, useEffect, useReducer } from "react";
 
 import type { KeypointsDefinition } from "../types/region-tools.ts";
-import MainLayout from "../MainLayout";
-import SettingsProvider from "../SettingsProvider";
-import combineReducers from "./reducers/combine-reducers";
-import generalReducer from "./reducers/general-reducer";
-import getFromLocalStorage from "../utils/get-from-local-storage";
-import historyHandler from "./reducers/history-handler";
-import imageReducer from "./reducers/image-reducer";
+import MainLayout from "../MainLayout/index.tsx";
+import SettingsProvider from "../SettingsProvider/index.tsx";
+import combineReducers from "./reducers/combine-reducers.ts";
+import generalReducer from "./reducers/general-reducer.ts";
+import getFromLocalStorage from "../utils/get-from-local-storage.ts";
+import historyHandler from "./reducers/history-handler.ts";
+import imageReducer from "./reducers/image-reducer.ts";
 import useEventCallback from "use-event-callback";
 import { AutosegOptions } from "autoseg/webworker";
 import { produce } from "immer";
@@ -100,16 +100,9 @@ export const Annotator = ({
   allowComments,
 }: AnnotatorProps) => {
   if (typeof selectedImage === "string") {
-    //console.log("selected image: " + selectedImage);
     selectedImage = (images || []).findIndex(
       (img) => img.name === selectedImage
     );
-
-    //console.log("selected image: " + selectedImage);
-    //console.log("image count: " + images?.length);
-    // console.log(
-    //   "image src: " + JSON.stringify((images || [])[selectedImage].src)
-    // );
 
     if (selectedImage === -1) selectedImage = undefined;
   }
@@ -149,9 +142,7 @@ export const Annotator = ({
       images,
     },
   };
-  const [state, dispatchToReducer] = useReducer<
-    (state: MainLayoutState, action: Action) => MainLayoutState
-  >(
+  const [state, dispatchToReducer] = useReducer(
     historyHandler(combinedReducers) as unknown as (
       state: MainLayoutState,
       action: Action

@@ -1,4 +1,4 @@
-// @flow
+
 
 import { ExpandingLine } from "../../types/region-tools.ts";
 

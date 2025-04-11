@@ -1,4 +1,4 @@
-// @flow
+
 
 import { ReactNode, useState } from "react";
 import { RemoveScroll } from "react-remove-scroll";

@@ -1,8 +1,8 @@
-// @flow
+
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "react-use";
-import loadImage from "./load-image";
+import loadImage from "./load-image.ts";
 import autoseg, { AutosegConfig } from "autoseg/webworker";
 import { Region } from "../types/region-tools.ts";
 import { ImagePosition } from "../types/common.ts";

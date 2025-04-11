@@ -1,11 +1,11 @@
 import { CSSProperties, ReactElement } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
-import Header from "../Header";
-import RightSidebar from "../RightSidebar";
-import WorkContainer from "../WorkContainer";
+import Header from "../Header/index.tsx";
+import RightSidebar from "../RightSidebar/index.tsx";
+import WorkContainer from "../WorkContainer/index.tsx";
 import { IconDictionaryContext } from "../icon-dictionary.ts";
 import { useMeasure } from "react-use";
-import IconSidebar from "../IconSidebar";
+import IconSidebar from "../IconSidebar/index.tsx";
 import { AnnotatorToolEnum } from "../../MainLayout/types.ts";
 import { SvgIconTypeMap } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
@@ -35,13 +35,13 @@ export interface WorkspaceProps {
   hideHeader?: boolean;
   hideHeaderText?: boolean;
   headerItems?: Array<{ name: string }>;
-  iconDictionary: Record<string, OverridableComponent<SvgIconTypeMap>>;
-  headerLeftSide: Array<ReactElement> | null;
+  iconDictionary?: Record<string, OverridableComponent<SvgIconTypeMap>>;
+  headerLeftSide?: Array<ReactElement> | null;
   rightSidebarItems: Array<ReactElement>;
   onClickHeaderItem: (item: { name: string }) => void;
   onClickIconSidebarItem: (item: { name: string }) => void;
-  selectedTools: Array<AnnotatorToolEnum>;
-  iconSidebarItems: Array<{
+  selectedTools?: Array<AnnotatorToolEnum>;
+  iconSidebarItems?: Array<{
     name: string;
     helperText: string;
     alwaysShowing?: boolean;

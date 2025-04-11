@@ -1,4 +1,4 @@
-// @flow
+
 
 import { Action, MainLayoutImageAnnotationState, MainLayoutState } from "../../MainLayout/types";
 import moment from "moment";

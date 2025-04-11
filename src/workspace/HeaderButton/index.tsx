@@ -1,4 +1,4 @@
-// @flow
+
 
 import Button from "@mui/material/Button";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";

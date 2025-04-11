@@ -1,5 +1,3 @@
-// @flow weak
-
 import { useRef } from "react";
 import excludePatternSrc from "./xpattern";
 

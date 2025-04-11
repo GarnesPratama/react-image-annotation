@@ -1,8 +1,9 @@
-// @flow
+
 
 import { useCallback, useLayoutEffect, useRef } from "react";
 
 export default (fn: Function) => {
+	// @ts-ignore
   let ref = useRef<Function>();
 
   useLayoutEffect(() => {

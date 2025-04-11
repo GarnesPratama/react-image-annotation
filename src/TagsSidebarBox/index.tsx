@@ -1,4 +1,4 @@
-// @flow
+
 
 import { memo, useMemo } from "react";
 import SidebarBoxContainer from "../SidebarBoxContainer";

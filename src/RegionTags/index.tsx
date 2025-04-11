@@ -1,7 +1,5 @@
-// @flow weak
-
 import Paper from "@mui/material/Paper";
-import DefaultRegionLabel, { RegionLabelProps } from "../RegionLabel";
+import DefaultRegionLabel, { RegionLabelProps } from "../RegionLabel/index.tsx";
 import LockIcon from "@mui/icons-material/Lock";
 import { Region } from "../types/region-tools.ts";
 import { ProjectBox, ProjectBoxFn } from "../ImageCanvas/use-project-box.ts";

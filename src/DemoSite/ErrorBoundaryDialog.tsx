@@ -1,4 +1,4 @@
-// @flow
+
 
 import { Component, ErrorInfo, ReactNode } from "react";
 import Dialog from "@mui/material/Dialog";

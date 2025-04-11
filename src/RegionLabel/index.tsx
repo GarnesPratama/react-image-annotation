@@ -1,4 +1,4 @@
-// @flow
+
 
 import { memo, useRef } from "react";
 import Paper from "@mui/material/Paper";

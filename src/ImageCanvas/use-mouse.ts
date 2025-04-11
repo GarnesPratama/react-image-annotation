@@ -1,5 +1,3 @@
-// @flow weak
-
 import { MouseEvent, MutableRefObject, useRef, WheelEvent } from "react";
 import { IMatrix, Matrix } from "transformation-matrix-js";
 

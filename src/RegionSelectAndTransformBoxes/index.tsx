@@ -1,7 +1,7 @@
 import { Fragment, memo, MutableRefObject } from "react";
-import HighlightBox from "../HighlightBox";
+import HighlightBox from "../HighlightBox/index.tsx";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
-import PreventScrollToParents from "../PreventScrollToParents";
+import PreventScrollToParents from "../PreventScrollToParents/index.tsx";
 import Tooltip from "@mui/material/Tooltip";
 import {
   type Box,
@@ -12,7 +12,7 @@ import {
 } from "../types/region-tools.ts";
 import { MouseEvents } from "../ImageCanvas/use-mouse.ts";
 import { ProjectBox, ProjectBoxFn } from "../ImageCanvas/use-project-box.ts";
-import { CanvasLayoutParams } from "../ImageCanvas";
+import { CanvasLayoutParams } from "../ImageCanvas/index.tsx";
 import { IMatrix } from "transformation-matrix-js";
 
 const theme = createTheme();

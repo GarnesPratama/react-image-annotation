@@ -1,5 +1,3 @@
-// @flow
-
 import Annotator from "./Annotator";
 
 // re-export types

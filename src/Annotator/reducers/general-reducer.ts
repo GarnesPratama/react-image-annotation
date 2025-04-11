@@ -1,18 +1,18 @@
-// @flow
-import { Action, MainLayoutState } from "../../MainLayout/types";
+
+import { Action, MainLayoutState } from "../../MainLayout/types.ts";
 import { ExpandingLine, moveRegion, Region } from "../../types/region-tools.ts";
 import {produce} from "immer";
 import isEqual from "lodash/isEqual";
 import get from "lodash/get";
 import set from "lodash/set";
-import getActiveImage from "./get-active-image";
-import { saveToHistory } from "./history-handler";
-import colors from "../../colors";
-import fixTwisted from "./fix-twisted";
-import convertExpandingLineToPolygon from "./convert-expanding-line-to-polygon";
-import getLandmarksWithTransform from "../../utils/get-landmarks-with-transform";
-import setInLocalStorage from "../../utils/set-in-local-storage";
-import { clamp } from "../../utils/clamp";
+import getActiveImage from "./get-active-image.ts";
+import { saveToHistory } from "./history-handler.ts";
+import colors from "../../colors.ts";
+import fixTwisted from "./fix-twisted.ts";
+import convertExpandingLineToPolygon from "./convert-expanding-line-to-polygon.ts";
+import getLandmarksWithTransform from "../../utils/get-landmarks-with-transform.ts";
+import setInLocalStorage from "../../utils/set-in-local-storage.ts";
+import { clamp } from "../../utils/clamp.ts";
 import { cloneDeep } from "lodash";
 
 const getRandomId = () => Math.random().toString().split(".")[1];
@@ -29,7 +29,6 @@ export default <T extends MainLayoutState>(
     ["MOUSE_DOWN", "MOUSE_UP", "MOUSE_MOVE"].includes(action.type) &&
     "x" in action
   ) {
-    console.log({initialType: Object.isFrozen(action.type)});
     const aa = state.allowedArea;
     action.x = clamp(action.x, aa.x, aa.x + aa.w);
     action.y = clamp(action.y, aa.y, aa.y + aa.h);
@@ -151,10 +150,8 @@ export default <T extends MainLayoutState>(
     case "CHANGE_REGION": {
       const _action = cloneDeep(action);
       const regionIndex = getRegionIndex(_action.region);
-      console.log({regionIndex});
       if (regionIndex === null) return state;
       const oldRegion = activeImage?.regions?.[regionIndex];
-      console.log({oldRegion});
       if (oldRegion?.cls !== _action.region.cls) {
         state = saveToHistory(state, "Change Region Classification") as T;
         const clsIndex = _action.region.cls
@@ -165,14 +162,8 @@ export default <T extends MainLayoutState>(
             )
           : undefined;
 
-        console.log({clsIndex, _action, acttype: Object.isFrozen(_action)});
         if (clsIndex !== undefined && clsIndex !== -1) {
           state = produce(state, s => {s.selectedCls = _action.region.cls})
-
-          console.log({state});
-
-          const a = _action.region;
-          console.log({atype: Object.isFrozen(a)});
 
           if (clsIndex !== -1 && state.regionClsList) {
             const cls = state.regionClsList[clsIndex];

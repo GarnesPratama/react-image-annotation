@@ -1,4 +1,4 @@
-// @flow
+
 
 import { memo, ReactNode, useCallback, useState } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";

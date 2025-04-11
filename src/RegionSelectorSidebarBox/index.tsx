@@ -1,7 +1,7 @@
-// @flow
+
 
 import { memo, ReactNode } from "react";
-import SidebarBoxContainer from "../SidebarBoxContainer";
+import SidebarBoxContainer from "../SidebarBoxContainer/index.tsx";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import { blue, grey } from "@mui/material/colors";
 import RegionIcon from "@mui/icons-material/PictureInPicture";

@@ -1,5 +1,3 @@
-// @flow weak
-
 import { useRef, useState } from "react";
 
 export default (

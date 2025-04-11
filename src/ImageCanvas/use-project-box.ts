@@ -1,4 +1,3 @@
-// @flow weak
 import useEventCallback from "use-event-callback";
 import { getEnclosingBox, Region } from "../types/region-tools.ts";
 import { CanvasLayoutParams } from "./index.tsx";

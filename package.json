@@ -1,12 +1,22 @@
 {
-  "name": "@aman-labs/react-image-annotate",
-  "version": "0.0.2",
+  "name": "@aman01x/react-image-annotate",
+  "version": "0.0.1",
   "type": "module",
-  "main": "dist/react-image-annotate.js",
+  "main": "dist/lib.js",
   "types": "dist/lib.d.ts",
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/lib.js",
+      "types": "./dist/lib.d.ts"
+    },
+    "./workspace": {
+      "import": "./dist/workspace.js",
+      "types": "./dist/workspace/index.d.ts"
+    }
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",

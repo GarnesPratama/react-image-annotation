@@ -1,5 +1,3 @@
-// @flow weak
-
 import { Fragment } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import { ProjectBoxFn } from "../ImageCanvas/use-project-box.ts";

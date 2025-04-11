@@ -1,4 +1,4 @@
-// @flow
+
 
 import { createRoot } from "react-dom/client";
 import Theme from "./Theme";

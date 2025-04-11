@@ -1,4 +1,4 @@
-// @flow
+
 import { useState } from "react";
 import Editor, { examples } from "./Editor";
 import Annotator, { AnnotatorProps } from "../Annotator";
