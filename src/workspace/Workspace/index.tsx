@@ -50,7 +50,7 @@ export interface WorkspaceProps {
   children: ReactElement;
 }
 
-export default ({
+export const Workspace = ({
   style = {},
   iconSidebarItems = [],
   selectedTools = ["select"],
@@ -102,3 +102,5 @@ export default ({
     </ThemeProvider>
   );
 };
+
+export default Workspace;

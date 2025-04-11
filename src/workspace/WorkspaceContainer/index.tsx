@@ -20,7 +20,7 @@ type IWorkspaceContainerProps = {
 	onClickHeaderItem: () => void;
 };
 
-const WorkspaceContainer = ({
+export const WorkspaceContainer = ({
 	children,
 	onNext,
 	onPrev,
