@@ -7,6 +7,21 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "react",
+    "image",
+    "annotation",
+    "labeling",
+    "image-labeling",
+    "image-annotation",
+    "image-segmentation",
+    "semantic-segmentation",
+    "bounding-box",
+    "react-component",
+    "drawing-tool",
+    "label-tool",
+    "typescript"
+  ],
   "exports": {
     ".": {
       "import": "./dist/lib.js",
