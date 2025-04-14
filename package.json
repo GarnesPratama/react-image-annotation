@@ -30,6 +30,10 @@
     "./workspace": {
       "import": "./dist/workspace.js",
       "types": "./dist/workspace/index.d.ts"
+    },
+    "./ImageViewer": {
+      "import": "./dist/ImageViewer.js",
+      "types": "./dist/ImageViewer/index.d.ts"
     }
   },
   "dependencies": {

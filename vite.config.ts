@@ -40,7 +40,8 @@ export default defineConfig(() => {
       lib: {
         entry: {
           lib: resolve(__dirname, "src/lib.tsx"),
-          workspace: resolve(__dirname, "src/workspace/index.tsx")
+          workspace: resolve(__dirname, "src/workspace/index.tsx"),
+          ImageViewer: resolve(__dirname, "src/ImageViewer/index.tsx")
         },
         formats: ["es"],
       },
