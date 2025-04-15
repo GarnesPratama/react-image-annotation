@@ -364,7 +364,6 @@ export const ModifiedCanvas = ({
           cursor:  dragging
             ? "grabbing"
             :  "grab",
-          border: "4px solid green"
         }}
       >
         {imageLoaded && !dragging && (
