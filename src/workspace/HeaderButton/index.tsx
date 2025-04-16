@@ -22,7 +22,11 @@ const getIcon = (
   return <Icon />;
 };
 
-const StyledButton = styled(Button)(() => ({
+const StyledButton = styled(
+  forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>((props, ref) => (
+    <Button ref={ref} {...props} />
+  ))
+)(() => ({
   textTransform: "none",
   width: 60,
   paddingTop: 8,
@@ -30,6 +34,7 @@ const StyledButton = styled(Button)(() => ({
   marginLeft: 1,
   marginRight: 1,
 }));
+
 const ButtonInnerContent = styled("div")(() => ({
   display: "flex",
   flexDirection: "column",
