@@ -27,6 +27,7 @@ const SidebarsAndContent = styled("div")(() => ({
   height: "100%",
   overflow: "hidden",
   maxWidth: "100vw",
+  paddingBottom: "10px"
 }));
 
 export interface WorkspaceRef {
