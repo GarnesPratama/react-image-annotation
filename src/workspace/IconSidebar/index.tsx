@@ -14,6 +14,7 @@ const Container = styled("div")(() => ({
   flexDirection: "column",
   backgroundColor: "#fff",
   flexShrink: 0,
+  marginTop: "5px",
 }));
 
 interface IconSidebarProps {

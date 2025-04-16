@@ -38,6 +38,7 @@ const StyledButton = styled(
 const ButtonInnerContent = styled("div")(() => ({
   display: "flex",
   flexDirection: "column",
+  gap: 2
 }));
 const IconContainer = styled("div")(
   ({ textHidden }: { textHidden: boolean }) => ({
