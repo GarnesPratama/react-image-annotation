@@ -54,7 +54,7 @@ export type AnnotatorProps = {
   onPrevImage?: (state: MainLayoutState) => void;
 };
 
-export interface AnnotatorRef {
+export type AnnotatorRef = {
   clickHeaderButton: (name: string) => void;
 }
 
