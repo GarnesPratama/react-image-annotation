@@ -1,7 +1,7 @@
 import Annotator from "./Annotator";
 
 // re-export types
-export type { AnnotatorProps } from "./Annotator";
+export type { AnnotatorProps, AnnotatorRef } from "./Annotator";
 export type {
   MainLayoutState,
   MainLayoutImageAnnotationState,

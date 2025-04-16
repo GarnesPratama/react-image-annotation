@@ -1,6 +1,6 @@
-import { CSSProperties, ReactElement } from "react";
+import { CSSProperties, forwardRef, ReactElement, useImperativeHandle, useRef } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
-import Header from "../Header/index.tsx";
+import Header, { HeaderRef } from "../Header/index.tsx";
 import RightSidebar from "../RightSidebar/index.tsx";
 import WorkContainer from "../WorkContainer/index.tsx";
 import { IconDictionaryContext } from "../icon-dictionary.ts";
@@ -29,6 +29,10 @@ const SidebarsAndContent = styled("div")(() => ({
   maxWidth: "100vw",
 }));
 
+export interface WorkspaceRef {
+  clickHeaderButton: (name: string) => void;
+}
+
 export interface WorkspaceProps {
   style?: CSSProperties;
   allowFullscreen?: boolean;
@@ -50,7 +54,7 @@ export interface WorkspaceProps {
   children: ReactElement;
 }
 
-export const Workspace = ({
+export const Workspace = forwardRef<WorkspaceRef, WorkspaceProps>(({
   style = {},
   iconSidebarItems = [],
   selectedTools = ["select"],
@@ -64,15 +68,23 @@ export const Workspace = ({
   hideHeader = false,
   hideHeaderText = false,
   children,
-}: WorkspaceProps) => {
+}, ref) => {
   const [sidebarAndContentRef, sidebarAndContent] =
     useMeasure<HTMLDivElement>();
+  const headerRef = useRef<HeaderRef>(null);
+
+  useImperativeHandle(ref, () => ({
+    clickHeaderButton(name: string) {
+      headerRef.current?.clickButtonByName(name);
+    },
+  }));
   return (
     <ThemeProvider theme={theme}>
       <IconDictionaryContext.Provider value={iconDictionary}>
         <Container style={style}>
           {!hideHeader && (
             <Header
+            ref={headerRef}
               hideHeaderText={hideHeaderText}
               leftSideContent={headerLeftSide}
               onClickItem={onClickHeaderItem}
@@ -101,6 +113,6 @@ export const Workspace = ({
       </IconDictionaryContext.Provider>
     </ThemeProvider>
   );
-};
+});
 
 export default Workspace;

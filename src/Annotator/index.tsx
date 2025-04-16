@@ -5,10 +5,10 @@ import {
   MainLayoutState,
   RegionAllowedActions,
 } from "../MainLayout/types.ts";
-import { ComponentType, FunctionComponent, useEffect, useReducer } from "react";
+import { ComponentType, forwardRef, FunctionComponent, useEffect, useImperativeHandle, useReducer, useRef } from "react";
 
 import type { KeypointsDefinition } from "../types/region-tools.ts";
-import MainLayout from "../MainLayout/index.tsx";
+import MainLayout, { MainLayoutRef } from "../MainLayout/index.tsx";
 import SettingsProvider from "../SettingsProvider/index.tsx";
 import combineReducers from "./reducers/combine-reducers.ts";
 import generalReducer from "./reducers/general-reducer.ts";
@@ -54,7 +54,11 @@ export type AnnotatorProps = {
   onPrevImage?: (state: MainLayoutState) => void;
 };
 
-export const Annotator = ({
+export interface AnnotatorRef {
+  clickHeaderButton: (name: string) => void;
+}
+
+export const Annotator = forwardRef<AnnotatorRef, AnnotatorProps>(({
   images,
   allowedArea,
   selectedImage = images && images.length > 0 ? 0 : undefined,
@@ -98,7 +102,7 @@ export const Annotator = ({
   hideFullScreen,
   hideSave,
   allowComments,
-}: AnnotatorProps) => {
+}, ref) => {
   if (typeof selectedImage === "string") {
     selectedImage = (images || []).findIndex(
       (img) => img.name === selectedImage
@@ -106,6 +110,15 @@ export const Annotator = ({
 
     if (selectedImage === -1) selectedImage = undefined;
   }
+
+  const mainLayoutRef = useRef<MainLayoutRef>(null);
+    
+  useImperativeHandle(ref, () => ({
+    clickHeaderButton(name: string) {
+      mainLayoutRef.current?.clickHeaderButton(name);
+    },
+  }));
+
   const combinedReducers = combineReducers(imageReducer, generalReducer) as (
     state: MainLayoutState,
     action: Action
@@ -186,6 +199,7 @@ export const Annotator = ({
   return (
     <SettingsProvider>
       <MainLayout
+        ref={mainLayoutRef}
         RegionEditLabel={RegionEditLabel}
         alwaysShowNextButton={Boolean(onNextImage)}
         alwaysShowPrevButton={Boolean(onPrevImage)}
@@ -203,6 +217,6 @@ export const Annotator = ({
       />
     </SettingsProvider>
   );
-};
+});
 
 export default Annotator;

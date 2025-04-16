@@ -6,7 +6,7 @@ import { useIconDictionary } from "../icon-dictionary.ts";
 import { iconMapping } from "../icon-mapping.ts";
 import { colors, SvgIconTypeMap } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
-import { ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 
 const theme = createTheme();
 const defaultNameIconMapping = iconMapping;
@@ -63,17 +63,17 @@ interface HeaderButtonProps {
   hideText?: boolean;
 }
 
-export const HeaderButton = ({
+export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(({
   name,
   icon,
   disabled,
   onClick,
   hideText = false,
-}: HeaderButtonProps) => {
+}, ref) => {
   const customIconMapping = useIconDictionary();
   return (
     <ThemeProvider key={name} theme={theme}>
-      <StyledButton onClick={onClick} disabled={disabled}>
+      <StyledButton onClick={onClick} disabled={disabled} ref={ref}>
         <ButtonInnerContent>
           <IconContainer textHidden={hideText}>
             {icon || getIcon(name, customIconMapping)}
@@ -87,6 +87,6 @@ export const HeaderButton = ({
       </StyledButton>
     </ThemeProvider>
   );
-};
+});
 
 export default HeaderButton;

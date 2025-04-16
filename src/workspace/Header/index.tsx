@@ -1,7 +1,7 @@
 import HeaderButton from "../HeaderButton/index.js";
 import Box from "@mui/material/Box";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
-import { ReactNode } from "react";
+import { forwardRef, ReactNode, useImperativeHandle, useRef } from "react";
 
 const theme = createTheme();
 
@@ -22,12 +22,29 @@ interface HeaderProps {
   onClickItem: (item: { name: string }) => void;
 }
 
-export const Header = ({
+export type HeaderRef = {
+  clickButtonByName: (name: string) => void;
+};
+
+export const Header = forwardRef<HeaderRef, HeaderProps>(({
   leftSideContent = null,
   hideHeaderText = false,
   items,
   onClickItem,
-}: HeaderProps) => {
+}, ref) => {
+  const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+    useImperativeHandle(ref, () => ({
+      clickButtonByName(name: string) {
+        const button = buttonRefs.current[name];
+        if (button) {
+          button.click();
+        } else {
+          console.warn(`No button found with name: ${name}`);
+        }
+      },
+    }));
+
   return (
     <ThemeProvider theme={theme}>
       <Container>
@@ -35,6 +52,9 @@ export const Header = ({
         {items.map((item, index) => (
           <HeaderButton
             key={`${item.name}-${index}`}
+            ref={(el: HTMLButtonElement | null) => {
+              buttonRefs.current[item.name] = el;
+            }}
             hideText={hideHeaderText}
             onClick={() => onClickItem(item)}
             {...item}
@@ -43,6 +63,6 @@ export const Header = ({
       </Container>
     </ThemeProvider>
   );
-};
+});
 
 export default Header;

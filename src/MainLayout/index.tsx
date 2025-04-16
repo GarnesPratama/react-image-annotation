@@ -4,11 +4,13 @@ import { Action, AnnotatorToolEnum, MainLayoutState } from "./types.ts";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import {
   ComponentType,
+  forwardRef,
   FunctionComponent,
   MouseEvent,
   MouseEventHandler,
   ReactElement,
   useCallback,
+  useImperativeHandle,
   useMemo,
   useRef,
 } from "react";
@@ -32,7 +34,7 @@ import { HotKeys } from "react-hotkeys";
 import { grey } from "@mui/material/colors";
 import { notEmpty } from "../utils/not-empty.ts";
 import { ALL_TOOLS } from "./all-tools-list.ts";
-import Workspace from "../workspace/Workspace/index.tsx";
+import Workspace, { WorkspaceRef } from "../workspace/Workspace/index.tsx";
 import { tss } from "tss-react/mui";
 import { RegionLabelProps } from "../RegionLabel/index.tsx";
 import SettingsDialog from "../SettingsDialog/index.tsx";
@@ -94,7 +96,11 @@ type Props = {
   hideSave?: boolean;
 };
 
-export const MainLayout = ({
+export interface MainLayoutRef {
+  clickHeaderButton: (name: string) => void;
+}
+
+export const MainLayout = forwardRef<MainLayoutRef, Props>(({
   state,
   dispatch,
   RegionEditLabel,
@@ -107,7 +113,7 @@ export const MainLayout = ({
   hideSettings = false,
   hideFullScreen = false,
   hideSave = false,
-}: Props) => {
+}, ref) => {
   const { classes } = useStyles();
   const settings = useSettings();
   const fullScreenHandle = useFullScreenHandle();
@@ -115,6 +121,15 @@ export const MainLayout = ({
   const memoizedActionFns = useRef<Record<string, (...args: any[]) => void>>(
     {}
   );
+
+  const workSpaceRef = useRef<WorkspaceRef>(null);
+  
+  useImperativeHandle(ref, () => ({
+    clickHeaderButton(name: string) {
+      workSpaceRef.current?.clickHeaderButton(name);
+    },
+  }));
+
   const action = (type: Action["type"], ...params: Array<any>) => {
     const fnKey = `${type}(${params.join(",")})`;
     if (memoizedActionFns.current[fnKey])
@@ -366,6 +381,7 @@ export const MainLayout = ({
             )}
           >
             <Workspace
+              ref={workSpaceRef}
               allowFullscreen
               iconDictionary={iconDictionary}
               hideHeader={hideHeader}
@@ -400,6 +416,6 @@ export const MainLayout = ({
       </FullScreenContainer>
     </ThemeProvider>
   );
-};
+});
 
 export default MainLayout;
