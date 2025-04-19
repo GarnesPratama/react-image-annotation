@@ -94,6 +94,11 @@ type Props = {
   hideSettings?: boolean;
   hideFullScreen?: boolean;
   hideSave?: boolean;
+  customeHeaderItem?: {
+    icon: React.ReactNode,
+    name: string,
+    onClickAction: () => {}
+  }
 };
 
 export interface MainLayoutRef {
@@ -113,6 +118,7 @@ export const MainLayout = forwardRef<MainLayoutRef, Props>(({
   hideSettings = false,
   hideFullScreen = false,
   hideSave = false,
+  customeHeaderItem
 }, ref) => {
   const { classes } = useStyles();
   const settings = useSettings();
@@ -399,6 +405,7 @@ export const MainLayout = forwardRef<MainLayoutRef, Props>(({
               }
               iconSidebarItems={allSidebarIcons}
               rightSidebarItems={rightSidebarItems}
+              customeHeaderItem={customeHeaderItem}
             >
               {canvas}
             </Workspace>

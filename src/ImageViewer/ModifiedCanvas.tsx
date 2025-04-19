@@ -23,7 +23,6 @@ import ImageMask from "../ImageMask/index.tsx";
 import ImageCanvasBackground from "../ImageCanvasBackground/index.tsx";
 import useEventCallback from "use-event-callback";
 import RegionShapes from "../RegionShapes/index.tsx";
-import useWasdMode from "./use-wasd-mode.ts";
 import { ImagePosition } from "../types/common.ts";
 import { tss } from "tss-react/mui";
 
@@ -149,9 +148,6 @@ export const ModifiedCanvas = ({
   const [mat, changeMat] = useRafState<IMatrix>(getDefaultMat());
   // const maskImages = useRef({});
   const windowSize = useWindowSize();
-
-  const getLatestMat: () => IMatrix = useEventCallback(() => mat);
-  useWasdMode({ getLatestMat, changeMat });
 
   const { mouseEvents } = useMouse({
     canvasEl,

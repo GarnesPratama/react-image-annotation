@@ -50,6 +50,11 @@ export type AnnotatorProps = {
   hideFullScreen?: boolean;
   hideSave?: boolean;
   allowComments?: boolean;
+  customeHeaderItem?: {
+    icon: React.ReactNode,
+    name: string,
+    onClickAction: () => {}
+  }
   onNextImage?: (state: MainLayoutState) => void;
   onPrevImage?: (state: MainLayoutState) => void;
 };
@@ -102,6 +107,7 @@ export const Annotator = forwardRef<AnnotatorRef, AnnotatorProps>(({
   hideFullScreen,
   hideSave,
   allowComments,
+  customeHeaderItem
 }, ref) => {
   if (typeof selectedImage === "string") {
     selectedImage = (images || []).findIndex(
@@ -214,6 +220,7 @@ export const Annotator = forwardRef<AnnotatorRef, AnnotatorProps>(({
         hideSettings={hideSettings}
         hideFullScreen={hideFullScreen}
         hideSave={hideSave}
+        customeHeaderItem={customeHeaderItem}
       />
     </SettingsProvider>
   );

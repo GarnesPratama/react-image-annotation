@@ -20,6 +20,11 @@ interface HeaderProps {
   hideHeaderText?: boolean;
   items: Array<{ name: string }>;
   onClickItem: (item: { name: string }) => void;
+  customeHeaderItem?: {
+    icon: React.ReactNode,
+    name: string,
+    onClickAction: () => {}
+  }
 }
 
 export type HeaderRef = {
@@ -31,6 +36,7 @@ export const Header = forwardRef<HeaderRef, HeaderProps>(({
   hideHeaderText = false,
   items,
   onClickItem,
+  customeHeaderItem
 }, ref) => {
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -60,6 +66,17 @@ export const Header = forwardRef<HeaderRef, HeaderProps>(({
             {...item}
           />
         ))}
+        {customeHeaderItem ? (
+          <HeaderButton
+            key="customHeader"
+            ref={(el: HTMLButtonElement | null) => {
+              buttonRefs.current[customeHeaderItem.name] = el;
+            }}
+            hideText={hideHeaderText}
+            onClick={() => customeHeaderItem.onClickAction()}
+            name={customeHeaderItem.name}
+          />
+        ): <></>}
       </Container>
     </ThemeProvider>
   );
