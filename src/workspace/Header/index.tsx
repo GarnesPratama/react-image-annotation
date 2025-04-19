@@ -23,7 +23,7 @@ interface HeaderProps {
   customeHeaderItem?: {
     icon: React.ReactNode,
     name: string,
-    onClickAction: () => {}
+    onClickAction: () => void
   }
 }
 

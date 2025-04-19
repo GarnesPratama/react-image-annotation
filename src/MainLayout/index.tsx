@@ -97,7 +97,7 @@ type Props = {
   customeHeaderItem?: {
     icon: React.ReactNode,
     name: string,
-    onClickAction: () => {}
+    onClickAction: () => void
   }
 };
 

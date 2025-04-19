@@ -53,7 +53,7 @@ export type AnnotatorProps = {
   customeHeaderItem?: {
     icon: React.ReactNode,
     name: string,
-    onClickAction: () => {}
+    onClickAction: () => void
   }
   onNextImage?: (state: MainLayoutState) => void;
   onPrevImage?: (state: MainLayoutState) => void;

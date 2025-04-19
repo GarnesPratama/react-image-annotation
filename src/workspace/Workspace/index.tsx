@@ -56,7 +56,7 @@ export interface WorkspaceProps {
   customeHeaderItem?: {
     icon: React.ReactNode,
     name: string,
-    onClickAction: () => {}
+    onClickAction: () => void
   }
 }
 
