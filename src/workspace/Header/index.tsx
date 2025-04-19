@@ -75,6 +75,7 @@ export const Header = forwardRef<HeaderRef, HeaderProps>(({
             hideText={hideHeaderText}
             onClick={() => customeHeaderItem.onClickAction()}
             name={customeHeaderItem.name}
+            icon={customeHeaderItem.icon}
           />
         ): <></>}
       </Container>
