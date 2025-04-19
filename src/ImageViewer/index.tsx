@@ -1,6 +1,7 @@
 import ModifiedCanvas from "./ModifiedCanvas"
 import { useSettings } from "../SettingsProvider";
 import { AnnotatorToolEnum, Image } from "../MainLayout/types";
+import { useEffect } from "react";
 
 export type IImageViewerType = {
   allowedArea?: {
@@ -9,18 +10,30 @@ export type IImageViewerType = {
     w: number;
     h: number;
   },
-  regionClsList: (string | {
+  regionClsList?: (string | {
     id: string;
     label: string;
     color: string;
   })[],
+  regionTagList?:Array<string>
   imageSrc: Image['src'],
   imageRegions: Image['regions']
   selectedTool?: AnnotatorToolEnum
 }
 
-export const ImageViewer = ({ allowedArea, regionClsList, imageSrc, imageRegions }: IImageViewerType) => {
+export const ImageViewer = ({ allowedArea, regionClsList, regionTagList, imageSrc, imageRegions }: IImageViewerType) => {
 const settings = useSettings();
+  useEffect(() => {
+    const blocker = (e: KeyboardEvent) => {
+      if (["a", "s", "d", "w"].includes(e.key)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("keydown", blocker, true); // capture phase
+    return () => window.removeEventListener("keydown", blocker, true);
+  }, []);
 
   return (
     <ModifiedCanvas
@@ -28,6 +41,7 @@ const settings = useSettings();
           key={0}
           allowedArea={allowedArea}
           regionClsList={regionClsList}
+          regionTagList={regionTagList}
           regions={imageRegions || []}
           imageSrc={imageSrc || null}
           onMouseMove={(_p) => {}}
