@@ -1,7 +1,6 @@
 import ModifiedCanvas from "./ModifiedCanvas"
 import { useSettings } from "../SettingsProvider";
 import { AnnotatorToolEnum, Image } from "../MainLayout/types";
-import { useEffect } from "react";
 
 export type IImageViewerType = {
   allowedArea?: {
@@ -23,17 +22,6 @@ export type IImageViewerType = {
 
 export const ImageViewer = ({ allowedArea, regionClsList, regionTagList, imageSrc, imageRegions }: IImageViewerType) => {
 const settings = useSettings();
-  useEffect(() => {
-    const blocker = (e: KeyboardEvent) => {
-      if (["a", "s", "d", "w"].includes(e.key)) {
-        e.stopPropagation();
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener("keydown", blocker, true); // capture phase
-    return () => window.removeEventListener("keydown", blocker, true);
-  }, []);
 
   return (
     <ModifiedCanvas

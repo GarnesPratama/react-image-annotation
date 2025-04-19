@@ -53,6 +53,11 @@ export interface WorkspaceProps {
   }>;
   rightSidebarExpanded?: boolean;
   children: ReactElement;
+  customeHeaderItem?: {
+    icon: React.ReactNode,
+    name: string,
+    onClickAction: () => {}
+  }
 }
 
 export const Workspace = forwardRef<WorkspaceRef, WorkspaceProps>(({
@@ -68,6 +73,7 @@ export const Workspace = forwardRef<WorkspaceRef, WorkspaceProps>(({
   rightSidebarExpanded,
   hideHeader = false,
   hideHeaderText = false,
+  customeHeaderItem,
   children,
 }, ref) => {
   const [sidebarAndContentRef, sidebarAndContent] =
@@ -90,6 +96,7 @@ export const Workspace = forwardRef<WorkspaceRef, WorkspaceProps>(({
               leftSideContent={headerLeftSide}
               onClickItem={onClickHeaderItem}
               items={headerItems}
+              customeHeaderItem={customeHeaderItem}
             />
           )}
           <SidebarsAndContent ref={sidebarAndContentRef}>
