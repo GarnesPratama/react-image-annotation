@@ -1,5 +1,5 @@
 {
-  "name": "@amnstak/react-image-annotate",
+  "name": "@scarlex/react-image-annotate",
   "version": "0.0.23",
   "type": "module",
   "main": "dist/lib.js",
@@ -91,7 +91,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aman1tagic/react-image-annotate.git"
+    "url": "git+https://github.com/GarnesPratama/react-image-annotation.git"
   },
   "scripts": {
     "start": "vite --force",

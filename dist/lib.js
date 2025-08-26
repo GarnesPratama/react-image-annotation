@@ -4179,7 +4179,7 @@ const Au = /* @__PURE__ */ ga(gH), yH = $r(), mH = Ls.create({
             (L.y - r.y) / N
           );
           W < 0.05 && (W = 0.05), W > 10 && (W = 10);
-          const ne = kH().translate(r.x, r.y).scaleU(W);
+          const ne = kH().translate(r.x, r.y).scaleU(W).translate(-r.x, -r.y);
           t(ne.clone());
         }
         i(null), a(null);

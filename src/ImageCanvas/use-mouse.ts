@@ -174,9 +174,11 @@ export default ({
           if (scale < 0.05) scale = 0.05;
           if (scale > 10) scale = 10;
 
+          // Terapkan transform baru (uniform scaling + center zoom)
           const newMat = getDefaultMat()
             .translate(zoomStart.x, zoomStart.y)
-            .scaleU(scale);
+            .scaleU(scale)
+            .translate(-zoomStart.x, -zoomStart.y);
 
           changeMat(newMat.clone());
         }
